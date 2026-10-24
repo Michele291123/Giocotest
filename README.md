@@ -28,6 +28,9 @@ il *tuo stesso server* a livello di rete, così vedi ogni difesa scattare.
 
 ## Build & avvio
 
+> Guida completa passo-passo (prerequisiti, Pi, Windows, risoluzione problemi):
+> **[BUILD.md](BUILD.md)**. Qui sotto la versione rapida.
+
 ### 1) Server sul Raspberry Pi
 Sul Pi (o compili sul PC e copi la cartella `dist/server` sul Pi):
 ```bash
