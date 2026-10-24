@@ -315,17 +315,26 @@ public sealed class GameSession
     {
         var ds = GameConfig.For(_difficulty);
         bool fromLeft = _rng.Next(2) == 0;
-        double speed = ds.speedMin + _rng.NextDouble() * (ds.speedMax - ds.speedMin);
-        double angleDeg = 35 + _rng.NextDouble() * 20;      // 35°..55° sopra l'orizzonte
-        double angle = angleDeg * Math.PI / 180.0;
+        int dir = fromLeft ? 1 : -1;
+        double t = ds.crossMs / 1000.0;                     // durata dell'attraversamento (s)
 
-        double startY = GameConfig.WorldHeight - 50;
-        double startX = fromLeft ? 60 : GameConfig.WorldWidth - 60;
-        double vx = (fromLeft ? 1 : -1) * speed * Math.Cos(angle);
-        double vy = -speed * Math.Sin(angle);              // verso l'alto
+        // Raggio casuale, uguale per tutte le prove.
+        double radius = GameConfig.TargetRadiusMin +
+            _rng.NextDouble() * (GameConfig.TargetRadiusMax - GameConfig.TargetRadiusMin);
+
+        // Parte appena fuori da un lato e attraversa TUTTA la larghezza (più margine):
+        // vx costante garantisce il passaggio "davanti" in ogni difficoltà.
+        double startX = fromLeft ? -20 : GameConfig.WorldWidth + 20;
+        double crossDist = GameConfig.WorldWidth + 80;
+        double vx = dir * crossDist / t;
+
+        // Arco verticale simmetrico: lanciato verso l'alto, con la gravità ricade
+        // alla stessa quota dopo 't'. Altezza del picco = g*t^2/8.
+        double startY = GameConfig.WorldHeight - (90 + _rng.NextDouble() * 70); // 90..160 dal fondo
+        double vy = -0.5 * GameConfig.Gravity * t;
 
         return new ActiveTarget(_nextTargetId++, startX, startY, vx, vy,
-            ds.targetRadius, now, ds.timeToLiveMs);
+            radius, now, ds.timeToLiveMs);
     }
 
     // ----------------------------- Utility AC -----------------------------

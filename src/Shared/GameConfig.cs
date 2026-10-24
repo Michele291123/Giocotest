@@ -36,28 +36,33 @@ public static class GameConfig
     // dal client. Oltre questo, lo sparo è valutato sullo stato corrente.
     public const int MaxRewindMs = 250;
 
+    // Raggio del piattello: casuale in questo range, UGUALE per tutte le prove.
+    // La difficoltà cambia la VELOCITÀ di attraversamento e l'intervallo tra
+    // bersagli, non la dimensione del bersaglio.
+    public const double TargetRadiusMin = 22;
+    public const double TargetRadiusMax = 40;
+
     // Tolleranza di clock: quanto può discostare il tempo dichiarato dal client
     // rispetto alla stima del server prima di insospettirsi (ms).
     public const int ClockToleranceMs = 500;
 
-    /// <summary>Parametri che dipendono dalla difficoltà della prova.</summary>
+    /// <summary>
+    /// Parametri che dipendono dalla difficoltà della prova. Il piattello
+    /// attraversa SEMPRE lo schermo "davanti" al giocatore; la difficoltà
+    /// regola in quanto tempo lo attraversa (<c>crossMs</c>) e ogni quanto
+    /// compare il bersaglio successivo (<c>spawnIntervalMs</c>). Il raggio è
+    /// casuale e indipendente dalla difficoltà (vedi TargetRadiusMin/Max).
+    /// </summary>
     public static DifficultySettings For(Difficulty d) => d switch
     {
+        // crossMs = tempo per attraversare l'intera larghezza; più basso = più veloce.
+        // timeToLiveMs = crossMs + margine, così il piattello esce di scena se mancato.
         Difficulty.Facile => new DifficultySettings(
-            spawnIntervalMs: 1400,
-            speedMin: 260, speedMax: 340,
-            targetRadius: 38,
-            timeToLiveMs: 4200),
+            spawnIntervalMs: 1400, crossMs: 2600, timeToLiveMs: 3100),
         Difficulty.Media => new DifficultySettings(
-            spawnIntervalMs: 950,
-            speedMin: 440, speedMax: 560,
-            targetRadius: 30,
-            timeToLiveMs: 3000),
+            spawnIntervalMs: 950, crossMs: 1900, timeToLiveMs: 2400),
         Difficulty.Difficile => new DifficultySettings(
-            spawnIntervalMs: 600,
-            speedMin: 680, speedMax: 820,
-            targetRadius: 23,
-            timeToLiveMs: 2200),
+            spawnIntervalMs: 600, crossMs: 1300, timeToLiveMs: 1800),
         _ => throw new ArgumentOutOfRangeException(nameof(d))
     };
 
@@ -85,9 +90,7 @@ public enum Weapon { FucileAutomatico, PistolaSemiauto }
 
 public readonly record struct DifficultySettings(
     int spawnIntervalMs,
-    double speedMin,
-    double speedMax,
-    double targetRadius,
+    int crossMs,
     int timeToLiveMs);
 
 public readonly record struct WeaponSettings(
